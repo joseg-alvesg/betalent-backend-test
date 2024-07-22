@@ -7,10 +7,16 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
 
-      table.integer('client_id').unsigned().references('id').inTable('clients').onDelete('CASCADE')
+      table
+        .integer('client_id')
+        .unsigned()
+        .references('id')
+        .inTable('clients')
+        .onDelete('CASCADE')
+        .onUpdate('CASCADE')
       table.string('street').notNullable()
-      table.string('number').notNullable()
-      table.string('complement').nullable()
+      table.string('street_number').notNullable()
+      table.string('complement')
       table.string('neighborhood').notNullable()
       table.string('city').notNullable()
       table.string('state').notNullable()

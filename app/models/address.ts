@@ -13,14 +13,11 @@ export default class Address extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
-  @belongsTo(() => Client)
-  declare client: BelongsTo<typeof Client>
-
   @column()
   declare street: string
 
   @column()
-  declare number: string
+  declare streetNumber: string
 
   @column()
   declare complement: string
@@ -36,4 +33,10 @@ export default class Address extends BaseModel {
 
   @column()
   declare zipCode: string
+
+  @column()
+  declare clientId: number
+
+  @belongsTo(() => Client)
+  declare client: BelongsTo<typeof Client>
 }

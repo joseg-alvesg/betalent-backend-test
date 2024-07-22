@@ -14,9 +14,11 @@ export default class Phone extends BaseModel {
   declare updatedAt: DateTime
 
   @column()
-  declare number: string
+  declare phone: string
+
+  @column({ columnName: 'client_id' })
+  declare clientId: number
 
   @belongsTo(() => Client)
   declare client: BelongsTo<typeof Client>
 }
-

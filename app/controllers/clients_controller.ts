@@ -21,10 +21,12 @@ export default class ClientsController {
   }
 
   async show({ params }: HttpContext) {
+    // TODO: integrate with sales
     return Client.findOrFail(params.id)
   }
 
   async store({ request, response }: HttpContext) {
+    // TODO: add validation
     const { client, phone, address } = request.all()
     // if (!name || !cpf) {
     //   throw new Error('Name and CPF are required')

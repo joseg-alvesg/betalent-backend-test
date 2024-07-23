@@ -6,13 +6,25 @@ export default class ProductsController {
     return Product.query().select('id', 'name', 'price').orderBy('id')
   }
 
-  async show({ params }: HttpContext) {
-    return Product.findOrFail(params.id)
+  async show({ params, response }: HttpContext) {
+    const product = Product.find(params.id)
+    if (!product) {
+      return response.status(404).json({ message: 'Product not found' })
+    }
+    return product
   }
 
-  async store({ request }: HttpContext) {
-    // TODO: add validation
-    return await Product.create({ ...request.all() })
+  async store({ request, response }: HttpContext) {
+    const { name, description, price } = request.all()
+    if (!name || !description || !price) {
+      return response.status(400).json({ message: 'Name, description and price are required' })
+    }
+    const productExists = await Product.findBy('name', name)
+    if (productExists) {
+      return response.status(400).json({ message: 'Product already exists' })
+    }
+
+    return await Product.create({ name, description, price })
   }
 
   async update({ request, params }: HttpContext) {

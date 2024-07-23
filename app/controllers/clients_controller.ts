@@ -19,9 +19,6 @@ export default class ClientsController {
 
     return clients
   }
-  // detalhar um(a) cliente e vendas a ele(a) (show):
-  //         trazer as vendas mais recentes primeiro;
-  //         possibilidade de filtrar as vendas por mês + ano;
   async show({ params, response, request }: HttpContext) {
     const { month, year } = request.qs()
 

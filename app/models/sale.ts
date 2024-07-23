@@ -14,8 +14,14 @@ export default class Sale extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
+  @column()
+  declare clientId: number
+
   @belongsTo(() => Client)
   declare client: BelongsTo<typeof Client>
+
+  @column()
+  declare productId: number
 
   @belongsTo(() => Product)
   declare product: BelongsTo<typeof Product>

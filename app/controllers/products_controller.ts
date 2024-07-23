@@ -27,9 +27,11 @@ export default class ProductsController {
     return await Product.create({ name, description, price })
   }
 
-  async update({ request, params }: HttpContext) {
-    const product = await Product.findOrFail(params.id)
-    // TODO: add validation
+  async update({ request, params, response }: HttpContext) {
+    const product = await Product.find(params.id)
+    if (!product) {
+      return response.status(404).json({ message: 'Product not found' })
+    }
     product.merge(request.all()).save()
     return product
   }

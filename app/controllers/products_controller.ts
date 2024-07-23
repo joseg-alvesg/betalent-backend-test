@@ -37,7 +37,10 @@ export default class ProductsController {
   }
 
   async delete({ params }: HttpContext) {
-    const product = await Product.findOrFail(params.id)
+    const product = await Product.find(params.id)
+    if (!product) {
+      return { message: 'Product not found' }
+    }
     product.isDeleted = true
     product.save()
     return product

@@ -6,81 +6,95 @@ import { inject } from '@adonisjs/core'
 
 @inject()
 export default class ClientsController {
-  async index() {
-    const clients = await Client.query()
-      .select('id', 'name')
-      .preload('phones', (phonesQuery) => {
-        phonesQuery.select('phone')
-      })
-      .preload('address', (addressQuery) => {
-        addressQuery.select('state')
-      })
-      .orderBy('id')
+  async index({ response }: HttpContext) {
+    try {
+      const clients = await Client.query()
+        .select('id', 'name')
+        .preload('phones', (phonesQuery) => {
+          phonesQuery.select('phone')
+        })
+        .preload('address', (addressQuery) => {
+          addressQuery.select('state')
+        })
+        .orderBy('id')
 
-    return clients
+      return response.json(clients)
+    } catch (error) {
+      return response.status(500).json({ message: 'Internal server error' })
+    }
   }
   async show({ params, response, request }: HttpContext) {
-    const { month, year } = request.qs()
-
-    const client = Client.find(params.id)
-    if (!client) {
-      return response.status(404).json({ message: 'Client not found' })
-    }
-    if (month && year) {
-      if (month < 1 || month > 12) {
-        return response.status(400).json({ message: 'Invalid month' })
+    try {
+      const { month, year } = request.qs()
+      const client = Client.find(params.id)
+      if (!client) {
+        return response.status(404).json({ message: 'Client not found' })
       }
+      if (month && year) {
+        if (month < 1 || month > 12) {
+          return response.status(400).json({ message: 'Invalid month' })
+        }
 
+        return Client.query()
+          .where('id', params.id)
+          .preload('sales', (salesQuery) => {
+            salesQuery
+              .select('id', 'quantity', 'total_price', 'created_at')
+              .whereRaw('extract(month from created_at) = ?', [month])
+              .whereRaw('extract(year from created_at) = ?', [year])
+              .orderBy('created_at', 'desc')
+          })
+          .first()
+      }
       return Client.query()
         .where('id', params.id)
         .preload('sales', (salesQuery) => {
           salesQuery
             .select('id', 'quantity', 'total_price', 'created_at')
-            .whereRaw('extract(month from created_at) = ?', [month])
-            .whereRaw('extract(year from created_at) = ?', [year])
             .orderBy('created_at', 'desc')
         })
-        .first()
+    } catch (error) {
+      return response.status(500).json({ message: 'Internal server error' })
     }
-    return Client.query()
-      .where('id', params.id)
-      .preload('sales', (salesQuery) => {
-        salesQuery
-          .select('id', 'quantity', 'total_price', 'created_at')
-          .orderBy('created_at', 'desc')
-      })
   }
 
   async store({ request, response }: HttpContext) {
-    const { client, phone, address } = request.all()
-    if (!client.name || !client.cpf) {
-      return response.status(400).json({ message: 'Name and CPF are required' })
-    }
-    if (!phone.phone) {
-      return response.status(400).json({ message: 'Phone is required' })
-    }
-    if (
-      !address.state ||
-      !address.city ||
-      !address.neighborhood ||
-      !address.street ||
-      !address.number ||
-      !address.zipCode
-    ) {
-      return response
-        .status(400)
-        .json({ message: 'State, city, neighborhood, street, number and zip code are required' })
-    }
+    try {
+      const { client, phone, address } = request.all()
+      if (!client.name || !client.cpf) {
+        return response.status(400).json({ message: 'Name and CPF are required' })
+      }
+      if (!phone.phone) {
+        return response.status(400).json({ message: 'Phone is required' })
+      }
+      if (
+        !address.state ||
+        !address.city ||
+        !address.neighborhood ||
+        !address.street ||
+        !address.number ||
+        !address.zipCode
+      ) {
+        return response
+          .status(400)
+          .json({ message: 'State, city, neighborhood, street, number and zip code are required' })
+      }
 
-    const clientReq = await Client.create({ ...client })
-    const phoneReq = await Phone.create({ ...phone, clientId: clientReq.id })
-    const addressReq = await Adress.create({ ...address, clientId: clientReq.id })
+      const clientReq = await Client.create({ ...client })
+      const phoneReq = await Phone.create({ ...phone, clientId: clientReq.id })
+      const addressReq = await Adress.create({ ...address, clientId: clientReq.id })
 
-    return response.status(201).json({ clientReq, phoneReq, addressReq })
+      return response.status(201).json({ clientReq, phoneReq, addressReq })
+    } catch (error) {
+      return response.status(500).json({ message: 'Internal server error' })
+    }
   }
 
   async update({ request, params, response }: HttpContext) {
     const { client, phone, address } = request.all()
+    if (!client && !phone && !address) {
+      return response.status(400).json({ message: 'At least one field is required' })
+    }
 
     try {
       if (client) {
@@ -108,16 +122,21 @@ export default class ClientsController {
 
       return response.status(200).json({ message: 'Client updated' })
     } catch (error) {
-      throw new Error('Client not found')
+      return response.status(500).json({ message: 'Internal server error' })
     }
   }
 
   async delete({ params, response }: HttpContext) {
-    const client = await Client.find(params.id)
-    if (!client) {
-      return response.status(404).json({ message: 'Client not found' })
+    try {
+      const client = await Client.find(params.id)
+      if (!client) {
+        return response.status(404).json({ message: 'Client not found' })
+      }
+
+      await client.delete()
+      return response.status(200).json({ message: 'Client deleted' })
+    } catch (error) {
+      return response.status(500).json({ message: 'Internal server error' })
     }
-    await client.delete()
-    return 'Client deleted'
   }
 }

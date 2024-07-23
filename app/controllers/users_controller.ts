@@ -2,13 +2,23 @@ import User from '#models/user'
 import { HttpContext } from '@adonisjs/core/http'
 
 export default class UsersController {
-  async signup({ request }: HttpContext) {
-    const user = await User.create(request.all())
-    return user
+  async signup({ request, response }: HttpContext) {
+    try {
+      const user = await User.create(request.all())
+      return user
+    } catch (error) {
+      return response.status(500).json({ message: 'Internal server error' })
+    }
   }
-  async login({ request, auth }: HttpContext) {
-    const { email, password } = request.all()
-    const user = await User.verifyCredentials(email, password)
-    return await auth.use('jwt').generate(user)
+  async login({ request, auth, response }: HttpContext) {
+    try {
+      const { email, password } = request.all()
+      const user = await User.verifyCredentials(email, password)
+      // NOTE: 1. Property 'generate' does not exist on type 'never'. [2339]
+      // @ts-ignore
+      return await auth.use('jwt').generate(user)
+    } catch (error) {
+      return response.status(500).json({ message: 'Internal server error' })
+    }
   }
 }

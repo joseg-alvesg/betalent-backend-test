@@ -11,7 +11,7 @@
 clone o projeto
 
 ```bash
-git clone <url-do-projeto>
+git clone https://github.com/joseg-alvesg/betalent-backend-test.git
 
 # entrar na pasta do projeto
 cd betalent-backend-test

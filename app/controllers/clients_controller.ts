@@ -60,8 +60,8 @@ export default class ClientsController {
 
   async store({ request, response }: HttpContext) {
     try {
-      const { client, phone, address } = request.all()
-      if (!client.name || !client.cpf) {
+      const { name, cpf, phone, address } = request.all()
+      if (!name || !cpf) {
         return response.status(400).json({ message: 'Name and CPF are required' })
       }
       if (!phone.phone) {
@@ -80,7 +80,7 @@ export default class ClientsController {
           .json({ message: 'State, city, neighborhood, street, number and zip code are required' })
       }
 
-      const clientReq = await Client.create({ ...client })
+      const clientReq = await Client.create({ name, cpf })
       const phoneReq = await Phone.create({ ...phone, clientId: clientReq.id })
       const addressReq = await Adress.create({ ...address, clientId: clientReq.id })
 
@@ -91,18 +91,18 @@ export default class ClientsController {
   }
 
   async update({ request, params, response }: HttpContext) {
-    const { client, phone, address } = request.all()
-    if (!client && !phone && !address) {
+    const { name, cpf, phone, address } = request.all()
+    if (!name && !cpf && !phone && !address) {
       return response.status(400).json({ message: 'At least one field is required' })
     }
 
     try {
-      if (client) {
+      if (name || cpf) {
         const clientReq = await Client.find(params.id)
         if (!clientReq) {
           return response.status(404).json({ message: 'Client not found' })
         }
-        clientReq.merge(client).save()
+        clientReq.merge({ name, cpf }).save()
       }
       if (phone) {
         // NOTE: the phone needs to be improved for multiple phones

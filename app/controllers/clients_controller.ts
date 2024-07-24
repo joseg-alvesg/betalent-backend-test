@@ -8,6 +8,8 @@ import { inject } from '@adonisjs/core'
 export default class ClientsController {
   async index({ response }: HttpContext) {
     try {
+      // NOTE: search if it's possible to lucid not reurn the join attributes
+      // in the $extras property and return it in the main object
       const clients = await Client.query()
         .from('clients')
         .join('phones', 'clients.id', 'phones.client_id')
@@ -15,6 +17,8 @@ export default class ClientsController {
         .select('clients.id', 'clients.name', 'phones.phone', 'addresses.state')
         .orderBy('clients.id')
 
+      // WARN: maybe a map is not the best option here because of the amount of data
+      // but for now it is ok
       return response.json(
         clients.map((client) => {
           return {

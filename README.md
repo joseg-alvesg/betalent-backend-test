@@ -18,7 +18,7 @@ cd betalent-backend-test
 cp .env.example .env
 ```
 
-altere o arquivo .env com as configurações do seu banco de dados
+> :warning: altere o arquivo .env com as configurações do seu banco de dados
 
 ##### escolha uma das opções abaixo para configurar o banco de dados
 
@@ -66,13 +66,7 @@ ou
 npm run legacy # sem hot reload a flag --watch modelo antigo do adonis
 ```
 
-"dev": "node ace serve --hmr",
-"legacy": "node ace serve --watch",
-"db:fresh": "node ace migration:run && node ace db:seed",
-"db:clean": "node ace db:wipe && node ace migration:run",
-"db:rollback":
-"node ace migration:rollback && node ace migration:run && node ace db:seed",
-"db:wipe": "node ace db:wipe && node ace migration:run && node ace db:seed",
+> verifique os scripts em package.json
 
 #### executando a aplicação
 
@@ -86,7 +80,7 @@ cada uma e como acessalas.
 Além da validação via token utilizando JWT não há middlewares adicionais,
 e as validações de entrada de dados estão sendo feitas dentro de cada método.
 
-é possivel visualizar também através do comando:
+é possivel visualizar as rotas através do comando:
 
 ```bash
 node ace list:routes
@@ -111,6 +105,8 @@ PUT /products/:id ................ auth
 DELETE /products/:id ................ auth
 POST /sales ....................... auth
 ```
+
+> :warning: as rotas que necessitam de autenticação estão marcadas com o middleware auth lembresse de passar o token no header da requisição
 
 <details>
   <summary>USUÁRIOS</summary>

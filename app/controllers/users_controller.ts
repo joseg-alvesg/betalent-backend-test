@@ -14,7 +14,7 @@ export default class UsersController {
     try {
       const { email, password } = request.all()
       const user = await User.verifyCredentials(email, password)
-      // NOTE: 1. Property 'generate' does not exist on type 'never'. [2339]
+      // WARN: 1. Property 'generate' does not exist on type 'never'. [2339] but it should work fine
       // @ts-ignore
       return await auth.use('jwt').generate(user)
     } catch (error) {

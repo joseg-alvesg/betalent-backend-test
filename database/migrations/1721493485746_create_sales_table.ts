@@ -7,7 +7,7 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
 
-      // NOTE: The following line is commented out because don't looks needed to be set to NULL
+      // NOTE: The following line is commented out because don't looks to be necessary use soft delete here
       // table.integer('client_id').unsigned().references('id').inTable('clients').onDelete('SET NULL')
       table.integer('client_id').unsigned().references('id').inTable('clients').onDelete('CASCADE')
       table.integer('product_id').unsigned().references('id').inTable('products')

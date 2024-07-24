@@ -4,7 +4,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 export default class ProductsController {
   async index({ response }: HttpContext) {
     try {
-      return Product.query().select('id', 'name', 'price').orderBy('id')
+      return Product.query().select('id', 'name', 'price').orderBy('name')
     } catch (error) {
       return response.status(500).json({ message: 'Internal server error' })
     }

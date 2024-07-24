@@ -4,6 +4,8 @@
 - MySQL
 - docker / docker-compose (opcional)
 
+> altere a porta caso tenha problemas com a porta 3006 do mysql ao utilizar o docker no arquivo docker-compose.yml e no arquivo .env
+
 ### configuração inicial
 
 clone o projeto

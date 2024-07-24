@@ -9,17 +9,24 @@ export default class ClientsController {
   async index({ response }: HttpContext) {
     try {
       const clients = await Client.query()
-        .select('id', 'name')
-        .preload('phones', (phonesQuery) => {
-          phonesQuery.select('phone')
-        })
-        .preload('address', (addressQuery) => {
-          addressQuery.select('state')
-        })
-        .orderBy('id')
+        .from('clients')
+        .join('phones', 'clients.id', 'phones.client_id')
+        .join('addresses', 'clients.id', 'addresses.client_id')
+        .select('clients.id', 'clients.name', 'phones.phone', 'addresses.state')
+        .orderBy('clients.id')
 
-      return response.json(clients)
+      return response.json(
+        clients.map((client) => {
+          return {
+            id: client.id,
+            name: client.name,
+            phone: client.$extras.phone,
+            state: client.$extras.state,
+          }
+        })
+      )
     } catch (error) {
+      return error
       return response.status(500).json({ message: 'Internal server error' })
     }
   }

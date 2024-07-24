@@ -64,6 +64,7 @@ export default class ClientsController {
             .select('id', 'quantity', 'total_price', 'created_at')
             .orderBy('created_at', 'desc')
         })
+        .first()
     } catch (error) {
       return response.status(500).json({ message: 'Internal server error' })
     }
@@ -71,29 +72,53 @@ export default class ClientsController {
 
   async store({ request, response }: HttpContext) {
     try {
-      const { name, cpf, phone, address } = request.all()
+      const {
+        name,
+        cpf,
+        phone,
+        state,
+        city,
+        neighborhood,
+        street,
+        streetNumber,
+        zipCode,
+        complement,
+      } = request.all()
       if (!name || !cpf) {
         return response.status(400).json({ message: 'Name and CPF are required' })
       }
-      if (!phone.phone) {
+      if (!phone) {
         return response.status(400).json({ message: 'Phone is required' })
       }
-      if (
-        !address.state ||
-        !address.city ||
-        !address.neighborhood ||
-        !address.street ||
-        !address.number ||
-        !address.zipCode
-      ) {
+      if (!state || !city || !neighborhood || !street || !streetNumber || !zipCode) {
         return response
           .status(400)
           .json({ message: 'State, city, neighborhood, street, number and zip code are required' })
       }
 
+      const clientExists = await Client.findBy('cpf', cpf)
+      if (clientExists) {
+        return response.status(400).json({ message: 'Client already exists' })
+      }
+
+      const phoneExists = await Phone.findBy('phone', phone.phone)
+      if (phoneExists) {
+        return response.status(400).json({ message: 'Phone already exists' })
+      }
+
       const clientReq = await Client.create({ name, cpf })
       const phoneReq = await Phone.create({ ...phone, clientId: clientReq.id })
-      const addressReq = await Adress.create({ ...address, clientId: clientReq.id })
+      const addressReq = await Adress.create({
+        state,
+        city,
+        neighborhood,
+        street,
+        streetNumber,
+        zipCode,
+        complement,
+        clientId: clientReq.id,
+      })
+      console.log(clientReq, phoneReq, addressReq)
 
       return response.status(201).json({ clientReq, phoneReq, addressReq })
     } catch (error) {
@@ -102,11 +127,21 @@ export default class ClientsController {
   }
 
   async update({ request, params, response }: HttpContext) {
-    const { name, cpf, phone, address } = request.all()
-    if (!name && !cpf && !phone && !address) {
+    const {
+      name,
+      cpf,
+      phone,
+      state,
+      city,
+      neighborhood,
+      street,
+      streetNumber,
+      zipCode,
+      complement,
+    } = request.all()
+    if (!request.all() || request.all().length === 0) {
       return response.status(400).json({ message: 'At least one field is required' })
     }
-
     try {
       if (name || cpf) {
         const clientReq = await Client.find(params.id)
@@ -117,18 +152,20 @@ export default class ClientsController {
       }
       if (phone) {
         // NOTE: the phone needs to be improved for multiple phones
-        const phoneReq = await Phone.find('clientId', params.id)
+        const phoneReq = await Phone.findBy('client_id', params.id)
         if (!phoneReq) {
           return response.status(404).json({ message: 'Phone not found' })
         }
-        phoneReq.merge(phone).save()
+        phoneReq.merge({ phone }).save()
       }
-      if (address) {
-        const addressReq = await Adress.find('clientId', params.id)
+      if (state || city || neighborhood || street || streetNumber || zipCode || complement) {
+        const addressReq = await Adress.findBy('client_id', params.id)
         if (!addressReq) {
           return response.status(404).json({ message: 'Address not found' })
         }
-        addressReq.merge(address).save()
+        addressReq
+          .merge({ state, city, neighborhood, street, streetNumber, zipCode, complement })
+          .save()
       }
 
       return response.status(200).json({ message: 'Client updated' })

@@ -72,6 +72,13 @@ npm run legacy # sem hot reload a flag --watch modelo antigo do adonis
 
 #### executando a aplicação
 
+<details>
+  <summary> Diagrama de relacionamentos entre as tabelas </summary>
+
+![diagrama](./assets/betalentdb-diagram.png)
+
+</details>
+
 ##### Rotas
 
 são ao todo 11 rotas disponíveis estarão listadas abaixo com um breve resumo de

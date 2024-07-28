@@ -1,4 +1,5 @@
 import Product from '#models/product'
+import { storeProductValidation, updateProductValidation } from '#validators/product'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class ProductsController {
@@ -28,9 +29,8 @@ export default class ProductsController {
   async store({ request, response }: HttpContext) {
     try {
       const { name, description, price } = request.all()
-      if (!name || !description || !price) {
-        return response.status(400).json({ message: 'Name, description and price are required' })
-      }
+      await storeProductValidation.validate({ name, description, price })
+
       const productExists = await Product.findBy('name', name)
       if (productExists) {
         return response.status(400).json({ message: 'Product already exists' })
@@ -38,17 +38,23 @@ export default class ProductsController {
 
       return response.status(201).json(await Product.create({ name, description, price }))
     } catch (error) {
-      // console.log(error)
-      return response.status(500).json({ message: 'Internal server error' })
+      return response
+        .status(error.status || 500)
+        .json(
+          error.messages
+            ? { message: error.messages[0].message }
+            : { message: 'Internal server error' }
+        )
     }
   }
 
   async update({ request, params, response }: HttpContext) {
     const { name, description, price } = request.all()
-    if (!name && !description && !price) {
-      return response.status(400).json({ message: 'Name, description or price are required' })
-    }
     try {
+      const payload = await updateProductValidation.validate({ name, description, price })
+      if (Object.keys(payload).length === 0) {
+        return response.status(400).json({ message: 'No data to update' })
+      }
       const product = await Product.find(params.id)
       if (!product) {
         return response.status(404).json({ message: 'Product not found' })
@@ -56,7 +62,13 @@ export default class ProductsController {
       product.merge({ name, description, price }).save()
       return response.status(200).json({ message: 'Product updated' })
     } catch (error) {
-      return response.status(500).json({ message: 'Internal server error' })
+      return response
+        .status(error.status || 500)
+        .json(
+          error.messages
+            ? { message: error.messages[0].message }
+            : { message: 'Internal server error' }
+        )
     }
   }
 

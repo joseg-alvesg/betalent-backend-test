@@ -3,6 +3,7 @@ import Client from '#models/client'
 import Phone from '#models/phone'
 import Adress from '#models/address'
 import { inject } from '@adonisjs/core'
+import { storeClientValidation, updateClientValidation } from '#validators/client'
 
 @inject()
 export default class ClientsController {
@@ -31,7 +32,7 @@ export default class ClientsController {
       )
     } catch (error) {
       return error
-      return response.status(500).json({ message: 'Internal server error' })
+      return response.status(500).json({ message: 'Internal server error (index)' })
     }
   }
   async show({ params, response, request }: HttpContext) {
@@ -84,30 +85,23 @@ export default class ClientsController {
         zipCode,
         complement,
       } = request.all()
-      if (!name || !cpf) {
-        return response.status(400).json({ message: 'Name and CPF are required' })
-      }
-      if (!phone) {
-        return response.status(400).json({ message: 'Phone is required' })
-      }
-      if (!state || !city || !neighborhood || !street || !streetNumber || !zipCode) {
-        return response
-          .status(400)
-          .json({ message: 'State, city, neighborhood, street, number and zip code are required' })
-      }
+      await storeClientValidation.validate(request.all())
 
       const clientExists = await Client.findBy('cpf', cpf)
       if (clientExists) {
         return response.status(400).json({ message: 'Client already exists' })
       }
 
-      const phoneExists = await Phone.findBy('phone', phone.phone)
+      const phoneExists = await Phone.findBy('phone', phone)
       if (phoneExists) {
         return response.status(400).json({ message: 'Phone already exists' })
       }
 
       const clientReq = await Client.create({ name, cpf })
-      const phoneReq = await Phone.create({ ...phone, clientId: clientReq.id })
+      const phoneReq = await Phone.create({
+        phone,
+        clientId: clientReq.id,
+      })
       const addressReq = await Adress.create({
         state,
         city,
@@ -118,11 +112,12 @@ export default class ClientsController {
         complement,
         clientId: clientReq.id,
       })
-      console.log(clientReq, phoneReq, addressReq)
 
-      return response.status(201).json({ clientReq, phoneReq, addressReq })
+      return response.status(201).json({ client: clientReq, phone: phoneReq, address: addressReq })
     } catch (error) {
-      return response.status(500).json({ message: 'Internal server error' })
+      return response
+        .status(error.status || 500)
+        .json(error.messages ? { ...error.messages[0] } : error)
     }
   }
 
@@ -139,10 +134,11 @@ export default class ClientsController {
       zipCode,
       complement,
     } = request.all()
-    if (!request.all() || request.all().length === 0) {
-      return response.status(400).json({ message: 'At least one field is required' })
-    }
     try {
+      const payload = await updateClientValidation.validate(request.all())
+      if (Object.keys(payload).length === 0) {
+        return response.status(400).json({ message: 'At least one field is required' })
+      }
       if (name || cpf) {
         const clientReq = await Client.find(params.id)
         if (!clientReq) {

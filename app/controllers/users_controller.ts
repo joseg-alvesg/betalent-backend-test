@@ -15,7 +15,7 @@ export default class UsersController {
       const user = await User.create({ email, password })
       return user
     } catch (error) {
-      return response.status(error.status).json({ ...error.messages[0] })
+      return response.status(500).json(error)
     }
   }
   async login({ request, auth, response }: HttpContext) {
@@ -27,7 +27,9 @@ export default class UsersController {
       // @ts-ignore
       return await auth.use('jwt').generate(user)
     } catch (error) {
-      return response.status(error.status).json({ ...error.messages[0] })
+      return response
+        .status(error.status || 500)
+        .json(error.messages ? { ...error.messages[0] } : error)
     }
   }
 }

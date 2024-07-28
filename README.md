@@ -72,15 +72,12 @@ npm run legacy # sem hot reload a flag --watch modelo antigo do adonis
 
 #### executando a aplicação
 
-não há muitas validações no primeiro momento, então é possível criar um usuário
-com qualquer email e senha inclusive emails "inválidos" mas funcionais.
-
 ##### Rotas
 
 são ao todo 11 rotas disponíveis estarão listadas abaixo com um breve resumo de
 cada uma e como acessalas.
 Além da validação via token utilizando JWT não há middlewares adicionais,
-e as validações de entrada de dados estão sendo feitas dentro de cada método.
+e as validações de entrada de dados estão sendo feitas dentro de cada método, com exceção de alguns metodos store e update que estão utilizando o vinejs.
 
 é possivel visualizar as rotas através do comando:
 

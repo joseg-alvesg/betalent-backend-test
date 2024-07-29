@@ -8,7 +8,7 @@ export default class ProductsController {
       // NOTE: need to know if is better to show deleted products or not
       // same question for method show
       // return Product.query().select('id', 'name', 'price').where('isDeleted', false).orderBy('name')
-      return Product.query().select('id', 'name', 'price').orderBy('name')
+      return Product.query().select('id', 'name', 'price', 'is_deleted').orderBy('name')
     } catch (error) {
       return response.status(500).json({ message: 'Internal server error' })
     }

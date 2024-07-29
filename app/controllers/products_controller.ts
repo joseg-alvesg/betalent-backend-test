@@ -49,6 +49,10 @@ export default class ProductsController {
   }
 
   async update({ request, params, response }: HttpContext) {
+    const isDeleted = await Product.findBy('id', params.id)
+    if (isDeleted?.isDeleted) {
+      return response.status(404).json({ message: 'Product not found' })
+    }
     const { name, description, price } = request.all()
     try {
       const payload = await updateProductValidation.validate({ name, description, price })
